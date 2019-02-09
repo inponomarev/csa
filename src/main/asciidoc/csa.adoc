@@ -1,0 +1,303 @@
+= Непрерывный статический анализ
+Иван Пономарёв, КУРС/МФТИ
+:revealjs_theme: black
+:revealjs_customtheme: white_course.css
+:revealjs_slideNumber:
+:revealjs_history:
+:revealjs_progress:
+:encoding: UTF-8
+:lang: ru
+include::_doc_general_attributes.adoc[]
+:doctype: article
+:toclevels: 3
+:imagesdir: images
+:source-highlighter: highlightjs
+:highlightjsdir: highlight
+:icons: font
+:iconfont-remote!:
+:iconfont-name: font-awesome-4.7.0/css/font-awesome
+:revealjs_mouseWheel: true
+:revealjs_center: false
+
+//== Часть 1. Введение
+:!figure-caption:
+
+== Что такое статический анализ?
+
+[%step]
+* Wikipedia: «Анализ программного обеспечения, производимый без реального выполнения исследуемых программ».
+* Здравый смысл: Любая проверка исходного кода, которая может быть выполнена в том же окружении, что и компиляция.
+
+
+== О продаже единорогов
+
+.Источник: https://commons.wikimedia.org/wiki/File:Oftheunicorn.jpg[The history of four-footed beasts and serpents]
+image::white-unicorn.jpg[]
+
+== Чего в принципе не могут анализаторы?
+
+image::no-unicorn.jpg[]
+
+
+== Проблема останова
+
+Зависнет или остановится?
+
+[source, python]
+----
+
+def halts(f):
+    # false, если программа зависает 
+    # . . .
+
+def g():
+    if halts(g):
+        while(True):
+            pass
+----
+
+== Теорема Райса
+
+Вычисляет ли функция квадрат числа?
+
+[source, python]
+----
+def is_a_squaring_function(f):
+    # true, если функция вычисляет квадрат
+    # . . .
+
+def halts(f):
+    def t(n):
+        f()
+        return n * n
+    return is_a_squaring_function(t)
+----
+
+== Статический анализ не найдёт даже такое
+
+* Все `Null Pointer Exception` (если у вас нет Null Safety в языке)
+* Все `Attribute Not Found Exception` (если у вас динамическая типизация) 
+
+...не говоря уж о менее тривиальных вещах.
+
+== Не волшебный единорог!
+
+image::no-unicorn.jpg[]
+
+== Статический анализ в широком смысле слова
+[%step]
+* Проверка стиля кодирования (checkstyle, flake8)
+* Проверка синтаксиса ресурсных файлов (xmllint, YAMLlint, JSONLint)
+* Компиляция! (`ansible --syntax-check`, `terraform validate`)
+* Снова компиляция! (compiler warnings)
+* Проверка правописания
+* Конфигурационные тесты
+
+== Как с этим жить?
+
+* Однократное применение анализа бессмысленно
+* Анализ должен производиться *непрерывно* и быть частью конвейера сборки/поставки
+
+== Continuous Delivery Book
+
+[.custom-style]
+[cols="30a,70a"]
+|===
+|image::cd.jpg[]
+|
+* Jez Humble, David Farley
+* Continuous Delivery: Reliable Software Releases through Build, Test, and Deployment Automation
+* Addison-Wesley, 2011
+|===
+
+== Типовой конвейер сборки
+
+1. статический анализ
+2. компиляция
+3. модульные тесты
+4. интеграционные тесты
+5. UI тесты
+6. ручная проверка
+
+== Типовой конвейер сборки: пирамида тестирования
+
+1. статический анализ
+2. компиляция
+3. [red]#*модульные тесты*#
+4. [red]#*интеграционные тесты*#
+5. [red]#*UI тесты*#
+6. ручная проверка
+
+== Пресловутая Пирамида Тестирования
+
+.Источник: https://martinfowler.com/bliki/TestPyramid.html[Martin Fowler, Test Pyramid]
+image::test-pyramid.png[{image-70-width}]
+
+== Пирамида как Фильтр Дефектов
+
+Где тут статический анализ?
+
+.Источник: https://twitter.com/noahsussman/status/836612175707930625[Noah Sussman]
+image::test-filter.jpg[{image-50-width}]
+
+== Многоступенчатый фильтр
+
+Каждый следующий каскад  отсеивает всё более мелкую фракцию загрязнений
+
+.Источник: https://commons.wikimedia.org/wiki/File:Milli-Q_Water_filtration_station.JPG[Wikimedia Commons]
+image::water-filtration.jpg[{image-60-width}]
+
+== Случай из практики
+
+`resource.json`
+[source,json]
+----
+{
+  "key": "value with "unescaped quotes" "
+}
+----
+
+[.fragment]
+-> Падают *все* UI тесты, по причине Javascript-ошибки при инициализации UI
+
+[.fragment]
+-> Добавляем JSONLint. Исправляем unescaped quotes. PROFIT
+
+[.fragment]
+[source,bash]
+find . -name \\*.json -print0 | xargs -0 -n1 -t jsonlint -q
+
+== Как быть с Legacy-кодом?
+
+image::legacy.png[]
+
+== Храповик
+image::ratchet.png[]
+
+== Храповик на Jenkins
+
+Формируем метаданные следующего вида:
+[source,yaml]
+----
+# warnings.yml
+celesta-sql:
+  checkstyle: 434
+  spotbugs: 45
+celesta-core:
+  checkstyle: 206
+  spotbugs: 13
+celesta-maven-plugin:
+  checkstyle: 19
+  spotbugs: 0
+celesta-unit:
+  checkstyle: 0
+  spotbugs: 0
+----
+
+== Подсчёт основан на XML-выводе анализаторов
+
+[source,groovy]
+----
+private Map countModule(prefix) {
+    def text = new File("${prefix}/target/checkstyle-result.xml").text
+    def checkstyle = new XmlSlurper().parseText(text)
+    def csCount = checkstyle.file.error.size()
+
+    text = new File("${prefix}/target/spotbugsXml.xml").text
+    def bugCollection = new XmlSlurper().parseText(text)
+    def fbCount = bugCollection.BugInstance.size()
+
+    [checkstyle: csCount, findbugs: fbCount]
+}
+----
+
+== Скачиваем данные о последней сборке
+
+[source,groovy]
+----
+def server = Artifactory.server 'ART'
+def downloadSpec = """
+                 {"files": [
+                    {
+                      "pattern": "warn/${project}/*/warnings.yml",
+                      "build": "${project} :: dev/LATEST",
+                      "target": "previous.yml",
+                      "flat": "true"
+                    }
+                    ]
+                }"""
+server.download spec: downloadSpec
+oldWarnings = readYaml file: 'previous.yml'
+----
+
+== Шаг храповика
+
+[source,groovy]
+----
+stage ('Ratcheting') {
+    def warningsMap = countWarnings()
+    writeYaml file: 'target/warnings.yml', data: warningsMap
+    compareWarningMaps oldWarnings, warningsMap
+}
+----
+
+== Упавшая проверка
+
+image::jenkins-fail.png[]
+
+== Упавшая проверка
+
+image::jenkins-fail2.png[]
+
+== Храповик: работа за полгода
+
+.Checkstyle warnings, https://github.com/CourseOrchestra/celesta[Celesta project]
+image::graph.png[{image-70-width}]
+
+== Проверка правописания
+
+* Запускайте aspell в не-интерактивном режиме
+* Храните пользовательский словарь в проекте
+
+== Проверка правописания
+
+.Проверка документации:
+[source,bash]
+----
+for f in $(find . -name '*.adoc'); do \
+cat $f | aspell --master=ru --personal=./dict list; done \
+| sort | uniq
+----
+
+.Проверка литералов и комментариев:
+[source,bash]
+----
+for f in $(find . -name '*.java'); do \
+cat $f | aspell --mode=ccpp --master=ru --personal=./dict list; done \
+| sort | uniq
+----
+
+== Упавшая проверка на Jenkins (aspell)
+
+image::aspell-fail.png[]
+
+== Фиксируйте версии анализаторов!
+
+Случай из практики: История одного исправления
+
+image::fix-versions.png[]
+
+== Выводы
+[%step]
+* Статический анализ многолик
+* Статический анализ бесполезен при нерегулярном применении
+* Внедряйте анализ в качестве первого звена конвейера интеграции
+* Используйте метод храповика для установки quality gates
+
+== На этом всё!
+
+* Мой твиттер @inponomarev
+{nbsp} +
+* Мой email: ponomarev@corchestra.ru
+{nbsp} +
+* *Спасибо!*
