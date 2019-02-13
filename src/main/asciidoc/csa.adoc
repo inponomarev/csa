@@ -129,14 +129,14 @@ image::test-pyramid.png[{image-70-width}]
 Где тут статический анализ?
 
 .Источник: https://twitter.com/noahsussman/status/836612175707930625[Noah Sussman]
-image::test-filter.jpg[{image-50-width}]
+image::test-filter.jpg[{image-40-width}]
 
 == Многоступенчатый фильтр
 
 Каждый следующий каскад  отсеивает всё более мелкую фракцию загрязнений
 
 .Источник: https://commons.wikimedia.org/wiki/File:Milli-Q_Water_filtration_station.JPG[Wikimedia Commons]
-image::water-filtration.jpg[{image-60-width}]
+image::water-filtration.jpg[{image-50-width}]
 
 == Случай из практики
 
@@ -163,26 +163,30 @@ find . -name \\*.json -print0 | xargs -0 -n1 -t jsonlint -q
 image::legacy.png[]
 
 == Храповик
+
+Штука, которая позволяет движение только в нужную сторону
+
 image::ratchet.png[]
+
 
 == Храповик на Jenkins
 
 Формируем метаданные следующего вида:
 [source,yaml]
 ----
-# warnings.yml
-celesta-sql:
-  checkstyle: 434
-  spotbugs: 45
-celesta-core:
-  checkstyle: 206
-  spotbugs: 13
-celesta-maven-plugin:
-  checkstyle: 19
-  spotbugs: 0
-celesta-unit:
-  checkstyle: 0
-  spotbugs: 0
+         # warnings.yml
+         celesta-sql:
+           checkstyle: 434
+           spotbugs: 45
+         celesta-core:
+           checkstyle: 206
+           spotbugs: 13
+         celesta-maven-plugin:
+           checkstyle: 19
+           spotbugs: 0
+         celesta-unit:
+           checkstyle: 0
+           spotbugs: 0
 ----
 
 == Подсчёт основан на XML-выводе анализаторов
@@ -190,7 +194,8 @@ celesta-unit:
 [source,groovy]
 ----
 private Map countModule(prefix) {
-    def text = new File("${prefix}/target/checkstyle-result.xml").text
+    def text = 
+        new File("${prefix}/target/checkstyle-result.xml").text
     def checkstyle = new XmlSlurper().parseText(text)
     def csCount = checkstyle.file.error.size()
 
@@ -208,15 +213,15 @@ private Map countModule(prefix) {
 ----
 def server = Artifactory.server 'ART'
 def downloadSpec = """
-                 {"files": [
-                    {
-                      "pattern": "warn/${project}/*/warnings.yml",
-                      "build": "${project} :: dev/LATEST",
-                      "target": "previous.yml",
-                      "flat": "true"
-                    }
-                    ]
-                }"""
+        {"files": [
+            {
+                "pattern": "warn/${project}/*/warnings.yml",
+                "build": "${project} :: dev/LATEST",
+                "target": "previous.yml",
+                "flat": "true"
+            }
+            ]
+        }"""
 server.download spec: downloadSpec
 oldWarnings = readYaml file: 'previous.yml'
 ----
@@ -264,7 +269,8 @@ cat $f | aspell --master=ru --personal=./dict list; done \
 [source,bash]
 ----
 for f in $(find . -name '*.java'); do \
-cat $f | aspell --mode=ccpp --master=ru --personal=./dict list; done \
+cat $f \
+| aspell --mode=ccpp --master=ru --personal=./dict list; done \
 | sort | uniq
 ----
 
@@ -284,6 +290,12 @@ image::fix-versions.png[]
 * Статический анализ бесполезен при нерегулярном применении
 * Внедряйте анализ в качестве первого звена конвейера интеграции
 * Используйте метод храповика для установки quality gates
+
+== Ссылки
+
+* *Humble, Jez; Farley, David (2011).* Continuous Delivery: reliable software releases through build, test, and deployment automation.
+* *И. Пономарев* https://habr.com/ru/post/436868/[Внедряйте статический анализ в процесс, а не ищите с его помощью баги]
+* *А. Кудрявцев* https://www.youtube.com/watch?v=8Cx3LHNjI24[Анализ программ: как понять, что ты хороший программист]
 
 == На этом всё!
 
