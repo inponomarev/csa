@@ -43,9 +43,6 @@ section.has-dark-background, section.has-dark-background h1, section.has-dark-ba
 /*********************************************
  * GLOBAL STYLES
  *********************************************/
-body {
-  background: #fff;
-  background-color: #fff; }
 
 .reveal {
   font-family: Roboto, "Source Sans Pro", Helvetica, sans-serif;
@@ -86,10 +83,12 @@ body {
 
 .reveal h1 {
   font-size: 2.2em; 
-  }
+  color: #e47825;  
+}
 
 .reveal h2 {
-  font-size: 2em; }
+  font-size: 1.9em; 
+}
 
 .reveal h3 {
   font-size: 1.2em; }
@@ -98,7 +97,8 @@ body {
   font-size: 1em; }
 
 .reveal h1 {
-  text-shadow: none; }
+  text-shadow: none; 
+  font-weight: bold}
 
 /*********************************************
  * OTHER
@@ -416,6 +416,7 @@ td.valign-top {
 
 .reveal .author small {
   font-size: 1em;
+  color: #e47825;
 }  
   
 /*********************************************
@@ -442,7 +443,66 @@ td.valign-top {
 
 
 body {
-  background-image: url(pattern.svg);
-  background-repeat: repeat;
+  background-color: #f2e5da;
 }
+
+.bad-value {
+  background-color: #f2dada;
+  padding: 4px 8px !important;
+  border-radius: 20px;
+  border: 2px solid #e51717 !important;
+}  
   
+.slide-background.title {
+  background-image: url(images/image1.png) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: center center !important;  
+}   
+
+.slide-background {
+  background-image: url(images/image3.png) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: center center !important;  
+}   
+
+.slide-background:last-child {
+  background-image: url(images/image1_a.png) !important;
+  background-repeat: no-repeat !important;
+  background-size: contain !important;
+  background-position: center center !important;  
+}   
+
+.reveal section.title {
+    top: calc(50% - 200px);
+    width: 70%;
+    left: 20.2%;
+}
+
+.reveal h2 {  
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 150px;
+    margin: -38px 0px 40px 9%;
+    /* left: 8%; */
+    width: 93%;
+    color: white;
+}
+
+.reveal section:last-child > * {  
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    margin: 0px 0px 0px 20%;
+    /* left: 8%; */
+    width: 71%;
+    color: #e47825;
+    height: inherit;
+}
+
+.reveal section:last-child > h2 {  
+    justify-content: center;
+    margin-bottom: 40px;
+}
