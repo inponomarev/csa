@@ -26,15 +26,15 @@ include::_doc_general_attributes.adoc[]
 
 [%step]
 * Wikipedia: «Анализ программного обеспечения, производимый без реального выполнения исследуемых программ».
-* Здравый смысл: Любая проверка исходного кода, которая может быть выполнена в том же окружении, что и компиляция.
+* Здравый смысл: Любая проверка исходного кода, не требующая написания тестов.
 
 
-== О продаже единорогов
+== Наш СА лучше вашего!
 
 .Источник: https://commons.wikimedia.org/wiki/File:Oftheunicorn.jpg[The history of four-footed beasts and serpents]
 image::white-unicorn.jpg[]
 
-== Чего в принципе не могут анализаторы?
+== Чего в принципе не может СА?
 
 image::no-unicorn.jpg[]
 
@@ -94,15 +94,22 @@ image::arab-horse.jpg[{image-70-width}]
 [%step]
 * Проверка стиля кодирования (checkstyle, flake8)
 * Проверка синтаксиса ресурсных файлов (xmllint, YAMLlint, JSONLint)
-* Компиляция! (`ansible --syntax-check`, `terraform validate`)
-* Снова компиляция! (compiler warnings)
+* Компиляция/парсинг (`ansible --syntax-check`, `terraform validate`)
+* Компиляция: compiler warnings
 * Проверка правописания
 * Конфигурационные тесты
+
+== Что из этого использовать?
+
+[.fragment]
+Всё!
 
 == Как с этим жить?
 
 * Однократное применение анализа бессмысленно
-* Анализ должен производиться *непрерывно* и быть частью конвейера сборки/поставки
+* Анализ должен производиться *непрерывно* и *автоматически*
+* Быть частью конвейера сборки/поставки
+* Результаты анализа должны определять *quality gates*
 
 == Continuous Delivery Book
 
@@ -116,14 +123,27 @@ image::arab-horse.jpg[{image-70-width}]
 * Addison-Wesley, 2011
 |===
 
+[transition="fade-out, slide-in"]
 == Типовой конвейер сборки
 
 1. статический анализ
 2. компиляция
-3. [.fragment.highlight-red]#модульные тесты#
-4. [.fragment.highlight-red]#интеграционные тесты#
-5. [.fragment.highlight-red]#UI тесты#
-6. ручная проверка
+3. модульные тесты
+4. интеграционные тесты
+5. UI тесты
+6. performance check
+7. ручная проверка
+
+[transition="fade-in, slide-out"]
+== Типовой конвейер сборки
+1. статический анализ
+2. компиляция
+3. [.highlight-red]#**модульные тесты**#
+4. [.highlight-red]#**интеграционные тесты**#
+5. [.highlight-red]#**UI тесты**#
+6. performance check
+7. ручная проверка
+
 
 == Пресловутая Пирамида Тестирования
 
@@ -132,7 +152,7 @@ image::test-pyramid.png[{image-70-width}]
 
 == Пирамида как Фильтр Дефектов
 
-Где тут статический анализ?
+Где тут место статическому анализу?
 
 .Источник: https://twitter.com/noahsussman/status/836612175707930625[Noah Sussman]
 image::test-filter.jpg[{image-40-width}]
@@ -144,7 +164,7 @@ image::test-filter.jpg[{image-40-width}]
 .Источник: https://commons.wikimedia.org/wiki/File:Milli-Q_Water_filtration_station.JPG[Wikimedia Commons]
 image::water-filtration.jpg[{image-50-width}]
 
-== Случай из практики
+== Случай из практики: долгий отклик
 
 `resource.json`
 [source,json]
@@ -155,16 +175,26 @@ image::water-filtration.jpg[{image-50-width}]
 ----
 
 [.fragment]
--> Падают *все* UI тесты, по причине Javascript-ошибки при инициализации UI
+* Падают UI тесты, по причине Javascript-ошибки при инициализации UI.
+* Но это происходит *спустя дни* после проблемного коммита.
 
-[.fragment]
--> Добавляем JSONLint. Исправляем unescaped quotes. PROFIT
+== Случай из практики: лечение
 
-[.fragment]
+
+* Добавляем JSONLint в начало пути.
+
 [source,bash]
 find . -name \\*.json -print0 | xargs -0 -n1 -t jsonlint -q
 
+[.fragment]
+* Убеждаемся, что отклик на проблему идёт *сразу*.
+
+[.fragment]
+* PROFIT
+
 == Как быть с Legacy-кодом?
+
+Знакомая картина?
 
 image::legacy.png[]
 
@@ -173,7 +203,7 @@ image::legacy.png[]
 1. Пороговое количество находок 
 +
 [.fragment]
-(не работает).
+(не работает, не рекомендую).
 
 [.fragment]
 [start=2]
@@ -196,8 +226,70 @@ image::legacy.png[]
 
 image::ratchet.png[]
 
+[transition="fade-out, slide-in"]
+== Принцип работы
+[graphviz, "ratchet-p1.png"]
+-----
+digraph G {
+  rankdir="LR";
+  graph [ dpi = 150 ];
+  
+  r1 -> r2 [label="master branch"];
+  b1 -> b3;
+  r1->b1;
+  r1[label="150\nwarnings"];
+  b1[label=". . ."];
+  b3[label=". . ."];
+  b3->r2;
+  r2[label="152\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>];
+}
+-----
 
-== Храповик на Jenkins
+== Упавшая проверка (один инструмент)
+image::jenkins-fail2.png[]
+
+[transition="fade-in, fade-out"]
+== Принцип работы
+[graphviz, "ratchet-p2.png"]
+-----
+digraph G {
+  rankdir="LR";
+  graph [ dpi = 150 ];
+  r1 -> r2 [label="master branch"];
+  b1 -> b3;
+  b3->b4;
+  r1->b1
+  r1[label="150\nwarnings"]
+  b1[label=". . ."]
+  b3[label=". . ."]
+  b4[label="fix"]
+  b4->r2
+  r2[label="148\nwarnings", color="green", xlabel=<<font color="green">merge allowed</font>>]
+}
+-----
+
+[transition="fade-in, slide-out"]
+== Принцип работы
+[graphviz, "ratchet-p3.png"]
+-----
+digraph G {
+  rankdir="LR";
+  graph [ dpi = 150 ];
+  r1 -> r2 [label="master branch"];
+  r1->b1;
+  r1[label="150\nwarnings"];
+  b1[label=". . ."];
+  b1->r2;
+  r2[label="148\nwarnings"];
+  r2->r3 [label="master branch"];
+  r2->b5;
+  b5->r3;
+  b5[label=". . ."];
+  r3[label="149\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>];
+}
+-----
+
+== Если модулей и инструментов много
 
 Формируем метаданные следующего вида:
 [source,yaml]
@@ -217,61 +309,48 @@ image::ratchet.png[]
            spotbugs: 0
 ----
 
-== Подсчёт основан на XML-выводе анализаторов
+== Упавшая проверка (много модулей/анализаторов)
+
+image::ratchet-report.png[]
+
+== Как это реализовать самому?
+
+* Jenkins scripted pipeline
+* Jenkins shared libraries in Groovy
+* JFrog Artifactory для хранения метаданных о сборках
+
+== Jenkins Warnings NG Plugin
+
+* Поддерживает scripted и declarative pipeline.
+* Собирает и публикует ворнинги всех мыслимых анализаторов
+[source,groovy]
+-----
+def checkstyle 
+  = scanForIssues tool: checkStyle(pattern: '**/target/checkstyle-result.xml')
+publishIssues issues: [checkstyle]
+def spotbugs 
+  = scanForIssues tool: spotBugs(pattern: '**/target/spotbugsXml.xml')
+publishIssues issues: [spotbugs]
+def eslint 
+  = scanForIssues tool: esLint(pattern: '**/target/eslint.xml')
+publishIssues issues: [eslint]
+
+. . .
+-----
+
+== Jenkins Warnings NG Plugin
+Красиво отображает
+
+image::warnings-ng.png[]
+
+== Jenkins Warnings NG Plugin
+Можно программировать Quality Gates, в т. ч. в виде разницы с reference build: 
 
 [source,groovy]
-----
-private Map countModule(prefix) {
-    def text = 
-        new File("${prefix}/target/checkstyle-result.xml").text
-    def checkstyle = new XmlSlurper().parseText(text)
-    def csCount = checkstyle.file.error.size()
-
-    text = new File("${prefix}/target/spotbugsXml.xml").text
-    def bugCollection = new XmlSlurper().parseText(text)
-    def fbCount = bugCollection.BugInstance.size()
-
-    [checkstyle: csCount, findbugs: fbCount]
-}
-----
-
-== Скачиваем данные о последней сборке
-
-[source,groovy]
-----
-def server = Artifactory.server 'ART'
-def downloadSpec = """
-        {"files": [
-            {
-                "pattern": "warn/${project}/*/warnings.yml",
-                "build": "${project} :: dev/LATEST",
-                "target": "previous.yml",
-                "flat": "true"
-            }
-            ]
-        }"""
-server.download spec: downloadSpec
-oldWarnings = readYaml file: 'previous.yml'
-----
-
-== Шаг храповика
-
-[source,groovy]
-----
-stage ('Ratcheting') {
-    def warningsMap = countWarnings()
-    writeYaml file: 'target/warnings.yml', data: warningsMap
-    compareWarningMaps oldWarnings, warningsMap
-}
-----
-
-== Упавшая проверка
-
-image::jenkins-fail.png[]
-
-== Упавшая проверка
-
-image::jenkins-fail2.png[]
+-----
+recordIssues tool: java(pattern: '*.log'), 
+  qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]
+-----
 
 == Храповик: работа за полгода
 
@@ -280,6 +359,7 @@ image::graph.png[{image-70-width}]
 
 == Проверка правописания
 
+* Quality Gate: **не должно быть незнакомых спелчерекру слов**.
 * Запускайте aspell в не-интерактивном режиме
 * Храните пользовательский словарь в проекте
 
@@ -298,19 +378,43 @@ cat $f | aspell --master=ru --personal=./dict list; done \
 ----
 for f in $(find . -name '*.java'); do \
 cat $f \
-| aspell --mode=ccpp --master=ru --personal=./dict list; done \
+| aspell --mode=ccpp --master=ru --personal=./dict list; done\
 | sort | uniq
 ----
-
-== Упавшая проверка на Jenkins (aspell)
-
-image::aspell-fail.png[]
 
 == Фиксируйте версии анализаторов!
 
 Случай из практики: История одного исправления
 
 image::fix-versions.png[]
+
+== Невоспроизводимый билд
+[graphviz, "unstable-update.png"]
+-----
+digraph G {
+  rankdir="LR";
+  graph [ dpi = 150 ];
+  
+  u -> r0;
+  u[shape=plaintext; label="linter update"]
+  r0[shape=point, width = 0]
+  r1 -> r0[ arrowhead = none, label="master branch" ];
+  
+  
+  
+  r0-> r2 [];
+  b1 -> b4;
+  
+  r1->b1
+  r1[label="150\nwarnings"]
+  b1[label=". . ."]
+  
+  b4[label=". . ."]
+  b4->r2
+  r2[label="153\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>]
+  {rank = same; u; r0; b4;}
+}
+-----
 
 == Выводы
 [%step]

@@ -336,6 +336,9 @@ td.valign-top {
   vertical-align: top;
 }
 
+.reveal .highlight-red {
+    color: red;
+}
 
   
 /*********************************************
