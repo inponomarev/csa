@@ -431,8 +431,8 @@ digraph G {
 
 == На этом всё!
 
-* Мой твиттер @inponomarev
+* icon:twitter[size=lg]  @inponomarev
 {nbsp} +
-* Мой email: ponomarev@corchestra.ru
+* icon:envelope[size=lg] ponomarev@corchestra.ru
 {nbsp} +
 * *Спасибо!*
