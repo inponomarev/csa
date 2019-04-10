@@ -84,6 +84,12 @@ def halts(f):
 
 image::no-unicorn.jpg[]
 
+== Обыкновенная лошадь
+
+.Источник: https://commons.wikimedia.org/wiki/File:Brockhaus_and_Efron_Encyclopedic_Dictionary_b35_043-0.jpg[Энциклопедия Брокгауза и Ефрона]
+image::arab-horse.jpg[{image-70-width}]
+
+
 == Статический анализ в широком смысле слова
 [%step]
 * Проверка стиля кодирования (checkstyle, flake8)
@@ -140,7 +146,7 @@ image::water-filtration.jpg[{image-50-width}]
 
 == Случай из практики
 
-resource.json`
+`resource.json`
 [source,json]
 ----
 {
@@ -162,9 +168,31 @@ find . -name \\*.json -print0 | xargs -0 -n1 -t jsonlint -q
 
 image::legacy.png[]
 
+== Quality Gates по результатам статического анализа
+[.fragment]
+1. Пороговое количество находок 
++
+[.fragment]
+(не работает).
+
+[.fragment]
+[start=2]
+2. Игнор старых находок, не пропускание новых 
++
+[.fragment]
+(трудно реализуем, есть не везде).
+
+[.fragment]
+[start=3]
+3. «Метод храповика» 
++
+[.fragment]
+(прост в реализации и just works).
+
 == Храповик
 
-Штука, которая позволяет движение только в нужную сторону
+Штука, позволяющая движение +
+только в нужную сторону
 
 image::ratchet.png[]
 
