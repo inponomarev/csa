@@ -322,19 +322,20 @@ image::ratchet-report.png[]
 == Jenkins Warnings NG Plugin
 
 * Поддерживает scripted и declarative pipeline.
-* Собирает и публикует ворнинги всех мыслимых анализаторов
+* Собирает и читает отчёты всех известных анализаторов:
 [source,groovy]
 -----
 def checkstyle 
-  = scanForIssues tool: checkStyle(pattern: '**/target/checkstyle-result.xml')
+  = scanForIssues tool: checkStyle(pattern: '**/cs.xml')
 publishIssues issues: [checkstyle]
-def spotbugs 
-  = scanForIssues tool: spotBugs(pattern: '**/target/spotbugsXml.xml')
-publishIssues issues: [spotbugs]
-def eslint 
-  = scanForIssues tool: esLint(pattern: '**/target/eslint.xml')
-publishIssues issues: [eslint]
 
+def spotbugs 
+  = scanForIssues tool: spotBugs(pattern: '**/spotbugs.xml')
+publishIssues issues: [spotbugs]
+
+def eslint 
+  = scanForIssues tool: esLint(pattern: '**/eslint.xml')
+publishIssues issues: [eslint]
 . . .
 -----
 
