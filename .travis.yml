@@ -5,6 +5,7 @@ addons:
     packages:
       - nodejs
       - npm
+      - graphviz
 
 sudo: required
 
@@ -14,12 +15,14 @@ jdk: openjdk8
 cache:
   directories:
   - $HOME/.m2
+  - /usr/local/lib/node
+  - /usr/local/lib/node_modules
 
 before_install:
-  - npm version
-  - sudo apt-get install -y graphviz
+  - sudo install -g decktape
 
 after_success:
+  - decktape -s 1200x900 --slides 1-500 reveal "file:///${TRAVIS_BUILD_DIR}/target/generated-slides/index.html?fragments=true" slides.pdf
   - cd target/generated-slides
   - git init
   - git config user.name "${GH_USER_NAME}"
