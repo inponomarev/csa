@@ -105,7 +105,7 @@ image::arab-horse.jpg[{image-70-width}]
 Всё!
 
 == Как с этим жить?
-
+[%step]
 * Однократное применение анализа бессмысленно
 * Анализ должен производиться *непрерывно* и *автоматически*
 * Быть частью конвейера сборки/поставки
@@ -175,8 +175,8 @@ image::water-filtration.jpg[{image-50-width}]
 ----
 
 [.fragment]
-* Падают UI тесты, по причине Javascript-ошибки при инициализации UI.
-* Но это происходит *спустя дни* после проблемного коммита.
+* Тесты падают.
+* Но это происходит *спустя дни*.
 
 == Случай из практики: лечение
 
@@ -245,7 +245,7 @@ digraph G {
 }
 -----
 
-== Упавшая проверка (один инструмент)
+== Упавшая проверка
 image::jenkins-fail2.png[]
 
 [transition="fade-in, fade-out"]
@@ -309,9 +309,9 @@ digraph G {
            spotbugs: 0
 ----
 
-== Упавшая проверка (много модулей/анализаторов)
+== Упавшая проверка
 
-image::ratchet-report.png[]
+image::ratchet-report.png[{image-60-width}]
 
 == Как это реализовать самому?
 
@@ -323,6 +323,7 @@ image::ratchet-report.png[]
 
 * Поддерживает scripted и declarative pipeline.
 * Собирает и читает отчёты всех известных анализаторов:
+
 [source,groovy]
 -----
 def checkstyle 
@@ -350,7 +351,8 @@ image::warnings-ng.png[]
 [source,groovy]
 -----
 recordIssues tool: java(pattern: '*.log'), 
-  qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]
+  qualityGates: [[threshold: 1, type: 'TOTAL', 
+                                    unstable: true]]
 -----
 
 == Храповик: работа за полгода
