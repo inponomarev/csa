@@ -20,7 +20,8 @@ before_install:
   - npm install decktape
 
 after_success:
-  - decktape -s 1200x900 --slides 1-500 reveal "file:///${TRAVIS_BUILD_DIR}/target/generated-slides/index.html?fragments=true" slides.pdf
+  - ls
+  - ./decktape -s 1200x900 --slides 1-500 reveal "file:///${TRAVIS_BUILD_DIR}/target/generated-slides/index.html?fragments=true" slides.pdf
   - cd target/generated-slides
   - git init
   - git config user.name "${GH_USER_NAME}"
