@@ -18,3 +18,9 @@ rocksdb/
 
 #auto-generated images
 src/main/asciidoc/*.png
+
+*.bak
+/src/main/asciidoc/images/ratchet-p1.png
+/src/main/asciidoc/images/ratchet-p2.png
+/src/main/asciidoc/images/ratchet-p3.png
+/src/main/asciidoc/images/unstable-update.png
