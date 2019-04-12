@@ -13,13 +13,11 @@ jdk: openjdk8
 cache:
   directories:
   - $HOME/.m2
-  - /usr/local/lib/node
-  - /usr/local/lib/node_modules
 
 before_install:
   - curl -sL https://deb.nodesource.com/setup_11.x | sudo bash -
   - sudo apt install nodejs
-  - sudo npm install -g decktape
+  - npm install decktape
 
 after_success:
   - decktape -s 1200x900 --slides 1-500 reveal "file:///${TRAVIS_BUILD_DIR}/target/generated-slides/index.html?fragments=true" slides.pdf
