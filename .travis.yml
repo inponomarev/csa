@@ -3,8 +3,6 @@ dist: xenial
 addons:
   apt:
     packages:
-      - nodejs
-      - npm
       - graphviz
 
 sudo: required
@@ -19,6 +17,8 @@ cache:
   - /usr/local/lib/node_modules
 
 before_install:
+  - curl -sL https://deb.nodesource.com/setup_11.x | sudo bash -
+  - sudo apt install nodejs
   - sudo npm install -g decktape
 
 after_success:
