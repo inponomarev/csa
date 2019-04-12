@@ -13,6 +13,7 @@ jdk: openjdk8
 cache:
   directories:
   - $HOME/.m2
+  - node_modules
 
 before_install:
   - curl -sL https://deb.nodesource.com/setup_11.x | sudo bash -
