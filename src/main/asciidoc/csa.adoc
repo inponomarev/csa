@@ -228,22 +228,43 @@ image::ratchet.png[]
 
 [transition="fade-out, slide-in"]
 == Принцип работы
+[graphviz, "ratchet-p0.png"]
+-----
+digraph G {
+  rankdir="LR";
+  graph [ dpi = 150 ];
+  ri[label="v 1.0\n 160 warnings"];
+  ri -> r1 [label="master branch"];
+
+  
+  ri ->b1 [xlabel = "dev branch"];
+  r1[label="v 1.1\n 150 warnings"];
+  b1[label=". . ."];
+  
+
+}
+-----
+
+[transition="fade-in, fade-out"]
+== Принцип работы
 [graphviz, "ratchet-p1.png"]
 -----
 digraph G {
   rankdir="LR";
   graph [ dpi = 150 ];
-  
+  ri[label="v 1.0\n 160 warnings"];
+  ri -> r1 [label="master branch"];
   r1 -> r2 [label="master branch"];
-  b1 -> b3;
-  r1->b1;
-  r1[label="150\nwarnings"];
-  b1[label=". . ."];
-  b3[label=". . ."];
-  b3->r2;
+  
+  ri ->b1 [xlabel = "dev branch"];
+  r1[label="v 1.1\n 150 warnings"];
+  b1[label="+ 2\nwarnings"];
+  
+  b1->r2;
   r2[label="152\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>];
 }
 -----
+
 
 == Упавшая проверка
 image::jenkins-fail2.png[]
@@ -255,15 +276,17 @@ image::jenkins-fail2.png[]
 digraph G {
   rankdir="LR";
   graph [ dpi = 150 ];
+  ri[label="v 1.0\n 160 warnings"];
+  ri -> r1 [label="master branch"];
   r1 -> r2 [label="master branch"];
-  b1 -> b3;
-  b3->b4;
-  r1->b1
-  r1[label="150\nwarnings"]
-  b1[label=". . ."]
-  b3[label=". . ."]
-  b4[label="fix"]
-  b4->r2
+  
+  ri ->b1;
+  r1[label="v 1.1\n 150 warnings"];
+  b1[label="+ 2\nwarnings"];
+  
+  b1->b2[xlabel="dev branch"];
+  b2->r2
+  b2[label="- 4\nwarnings"]
   r2[label="148\nwarnings", color="green", xlabel=<<font color="green">merge allowed</font>>]
 }
 -----
@@ -275,23 +298,28 @@ digraph G {
 digraph G {
   rankdir="LR";
   graph [ dpi = 150 ];
+  ri[label="v 1.0\n 160 warnings"];
+  ri -> r1 [label="master branch"];
   r1 -> r2 [label="master branch"];
-  r1->b1;
-  r1[label="150\nwarnings"];
-  b1[label=". . ."];
-  b1->r2;
-  r2[label="148\nwarnings"];
-  r2->r3 [label="master branch"];
-  r2->b5;
-  b5->r3;
-  b5[label=". . ."];
-  r3[label="149\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>];
+  
+  
+  r1[label="v 1.1\n 150 warnings"];
+  
+  
+  r2[label="v 1.2\n148 warnings"];
+  r2->r3;
+  
+  
+  b2->r3;
+  
+  b2[label="+ 1\nwarning"]
+  r3[label="149\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>]
 }
 -----
 
-== Если модулей и инструментов много
+== Много модулей/инструментов
 
-Формируем метаданные следующего вида:
+Вид метаданных:
 [source,yaml]
 ----
          # warnings.yml
@@ -385,11 +413,16 @@ cat $f \
 | sort | uniq
 ----
 
-== Фиксируйте версии анализаторов!
+== Случай из практики
 
-Случай из практики: История одного исправления
-
-image::fix-versions.png[]
+[source,yaml]
+----
+#.travis.yml
+. . .
+install:
+  -pip install yamllint
+  -pip install ansible-lint
+----
 
 == Невоспроизводимый билд
 [graphviz, "unstable-update.png"]
@@ -399,7 +432,7 @@ digraph G {
   graph [ dpi = 150 ];
   
   u -> r0;
-  u[shape=plaintext; label="linter update"]
+  u[shape=plaintext; label="linter update\n+ 13 warnings"]
   r0[shape=point, width = 0]
   r1 -> r0[ arrowhead = none, label="master branch" ];
   
@@ -410,14 +443,24 @@ digraph G {
   
   r1->b1
   r1[label="150\nwarnings"]
-  b1[label=". . ."]
+  b1[label="± 0\nwarnings"]
   
-  b4[label=". . ."]
+  b4[label="± 0\nwarnings"]
   b4->r2
-  r2[label="153\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>]
+  r2[label="163\nwarnings", color="red", xlabel=<<font color="red">merge blocked</font>>]
   {rank = same; u; r0; b4;}
 }
 -----
+
+== Фиксируем версии всего!
+[source,yaml]
+----
+#.travis.yml
+. . .
+install:
+  -pip install yamllint==1.13.0
+  -pip install ansible-lint==3.5.1
+----
 
 == Выводы
 [%step]
@@ -425,6 +468,7 @@ digraph G {
 * Статический анализ бесполезен при нерегулярном применении
 * Внедряйте анализ в качестве первого звена конвейера интеграции
 * Используйте метод храповика для установки quality gates
+* Не забывайте про принцип "reproducible builds"
 
 == Ссылки
 
