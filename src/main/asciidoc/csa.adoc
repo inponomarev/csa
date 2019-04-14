@@ -22,24 +22,31 @@ include::_doc_general_attributes.adoc[]
 //== Часть 1. Введение
 :!figure-caption:
 
-== Что такое статический анализ?
+== План
+
+1. Ограничения и возможности.
+2. Роль и место в конвейере поставки.
+3. Внедрение в legacy-проект.
+
+== What it is and what it is not
 
 [%step]
 * Wikipedia: «Анализ программного обеспечения, производимый без реального выполнения исследуемых программ».
 * Здравый смысл: Любая проверка исходного кода, не требующая написания тестов.
 
 
-== Наш СА лучше вашего!
+== Продавцы статанализаторов:
+
+Наш СА лучше вашего!
 
 .Источник: https://commons.wikimedia.org/wiki/File:Oftheunicorn.jpg[The history of four-footed beasts and serpents]
 image::white-unicorn.jpg[]
 
+[transition="fade-out, slide-in"]
 == Чего в принципе не может СА?
 
-image::no-unicorn.jpg[]
-
-
-== Проблема останова
+[transition="fade-in, slide-out"]
+== Чего в принципе не может СА?
 
 Зависнет или остановится?
 
@@ -73,10 +80,10 @@ def halts(f):
     return is_a_squaring_function(t)
 ----
 
-== Статический анализ не найдёт даже такое
+== Статанализ не найдёт
 
-* Все `Null Pointer Exception` (если у вас нет Null Safety в языке)
-* Все `Attribute Not Found Exception` (если у вас динамическая типизация)
+* Все `Null Pointer Exception` (если нет Null Safety в языке)
+* Все `Attribute Not Found Exception` (если динамическая типизация)
 
 ...не говоря уж о менее тривиальных вещах.
 
@@ -90,7 +97,7 @@ image::no-unicorn.jpg[]
 image::arab-horse.jpg[{image-70-width}]
 
 
-== Статический анализ в широком смысле слова
+== Статанализ в широком смысле слова
 [%step]
 * Проверка стиля кодирования (checkstyle, flake8)
 * Проверка синтаксиса ресурсных файлов (xmllint, YAMLlint, JSONLint)
@@ -110,6 +117,8 @@ image::arab-horse.jpg[{image-70-width}]
 * Анализ должен производиться *непрерывно* и *автоматически*
 * Быть частью конвейера сборки/поставки
 * Результаты анализа должны определять *quality gates*
+
+== Роль и место СА в конвейере поставки
 
 == Continuous Delivery Book
 
@@ -145,21 +154,19 @@ image::arab-horse.jpg[{image-70-width}]
 7. ручная проверка
 
 
-== Пресловутая Пирамида Тестирования
+== Пирамида Тестирования
 
 .Источник: https://martinfowler.com/bliki/TestPyramid.html[Martin Fowler, Test Pyramid]
 image::test-pyramid.png[{image-70-width}]
 
-== Пирамида как Фильтр Дефектов
-
-Где тут место статическому анализу?
-
-.Источник: https://twitter.com/noahsussman/status/836612175707930625[Noah Sussman]
-image::test-filter.jpg[{image-40-width}]
+// == Пирамида как Фильтр Дефектов
+//
+// Где тут место статическому анализу?
+//
+// .Источник: https://twitter.com/noahsussman/status/836612175707930625[Noah Sussman]
+//image::test-filter.jpg[{image-40-width}]
 
 == Многоступенчатый фильтр
-
-Каждый следующий каскад  отсеивает всё более мелкую фракцию загрязнений
 
 .Источник: https://commons.wikimedia.org/wiki/File:Milli-Q_Water_filtration_station.JPG[Wikimedia Commons]
 image::water-filtration.jpg[{image-50-width}]
@@ -192,32 +199,39 @@ find . -name \\*.json -print0 | xargs -0 -n1 -t jsonlint -q
 [.fragment]
 * PROFIT
 
-== Как быть с Legacy-кодом?
+[transition="fade-out, slide-in"]
+== Внедрение в legacy-проект
+
+[transition="fade-in, slide-out"]
+== Внедрение в legacy-проект
 
 Знакомая картина?
 
 image::legacy.png[]
 
-== Quality Gates по результатам статического анализа
 [.fragment]
-1. Пороговое количество находок 
-+
-[.fragment]
-(не работает, не рекомендую).
+*Оставить нельзя пофиксить!*
+
+== Пороговое значение находок
+
+[%step]
+* «Если меньше 100 находок, то код ОК»
+* ДАНО: в коде 90 находок и код ОК.
+* Добавляем Null Pointer Dereference.
+* У нас 91 находка, код всё ещё ОК?
 
 [.fragment]
-[start=2]
-2. Игнор старых находок, не пропускание новых 
-+
-[.fragment]
-(трудно реализуем, есть не везде).
+Вывод: не используйте данный метод!
+
+== Старые -- в игнор, новые не пускаем
+
+[%step]
+* Создаём suppression profile
+* Не пропускаем находки за пределами suppression
+* Но реализовать это сложно!
 
 [.fragment]
-[start=3]
-3. «Метод храповика» 
-+
-[.fragment]
-(прост в реализации и just works).
+Вывод: метод хорош, но труднодоступен
 
 == Храповик
 
@@ -235,13 +249,14 @@ digraph G {
   graph [ dpi = 150 ];
   ri[label="v 1.0\n 160 warnings"];
   ri -> r1 [label="master branch"];
-
+  r1 -> r2 [label="master branch", style="invis"];
   
   ri ->b1 [xlabel = "dev branch"];
   r1[label="v 1.1\n 150 warnings"];
-  b1[label=". . ."];
+  b1[label="+ 2\nwarnings"];
   
-
+  b1->r2[style="invis"];
+  r2[label="152\nwarnings", style="invis"];
 }
 -----
 
@@ -349,8 +364,7 @@ image::ratchet-report.png[{image-60-width}]
 
 == Jenkins Warnings NG Plugin
 
-* Поддерживает scripted и declarative pipeline.
-* Собирает и читает отчёты всех известных анализаторов:
+Собирает и читает отчёты всех известных анализаторов
 
 [source,groovy]
 -----
@@ -415,14 +429,27 @@ cat $f \
 
 == Случай из практики
 
+Кто здесь видит проблему?
+
 [source,yaml]
 ----
 #.travis.yml
 . . .
 install:
-  -pip install yamllint
-  -pip install ansible-lint
+  - pip install yamllint
+  - pip install ansible-lint
+  
+script:
+  . . .
+  # Check YAML validity
+  - yamllint -c yamllint.yml .
+
+  # Ansible code static analysis
+  - ansible-lint . . . 
+  - ansible-lint . . . 
+  - ansible-lint . . .
 ----
+
 
 == Невоспроизводимый билд
 [graphviz, "unstable-update.png"]
@@ -458,8 +485,8 @@ digraph G {
 #.travis.yml
 . . .
 install:
-  -pip install yamllint==1.13.0
-  -pip install ansible-lint==3.5.1
+  - pip install yamllint==1.13.0
+  - pip install ansible-lint==3.5.1
 ----
 
 == Выводы
@@ -468,7 +495,7 @@ install:
 * Статический анализ бесполезен при нерегулярном применении
 * Внедряйте анализ в качестве первого звена конвейера интеграции
 * Используйте метод храповика для установки quality gates
-* Не забывайте про принцип "reproducible builds"
+* Не забывайте про воспроизводимость сборок
 
 == Ссылки
 
