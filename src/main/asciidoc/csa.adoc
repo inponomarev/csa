@@ -97,12 +97,13 @@ image::no-unicorn.jpg[]
 image::arab-horse.jpg[{image-70-width}]
 
 
-== Статанализ в широком смысле слова
+== Разнообразие средств статанализа
 [%step]
 * Проверка стиля кодирования (checkstyle, flake8)
-* Проверка синтаксиса ресурсных файлов (xmllint, YAMLlint, JSONLint)
+* Поиск характерных ошибок в коде (spotbugs, PVS-Studio)
+* Проверка валидности ресурсных файлов (xmllint, YAMLlint, JSONLint)
 * Компиляция/парсинг (`ansible --syntax-check`, `terraform validate`)
-* Компиляция: compiler warnings
+* Предупреждения компиляторов
 * Проверка правописания
 * Конфигурационные тесты
 
@@ -111,11 +112,10 @@ image::arab-horse.jpg[{image-70-width}]
 [.fragment]
 Всё!
 
-== Как с этим жить?
+== Как это всё использовать?
 [%step]
 * Однократное применение анализа бессмысленно
 * Анализ должен производиться *непрерывно* и *автоматически*
-* Быть частью конвейера сборки/поставки
 * Результаты анализа должны определять *quality gates*
 
 == Роль и место СА в конвейере поставки
@@ -127,9 +127,7 @@ image::arab-horse.jpg[{image-70-width}]
 |===
 |image::cd.jpg[]
 |
-* Jez Humble, David Farley
-* Continuous Delivery: Reliable Software Releases through Build, Test, and Deployment Automation
-* Addison-Wesley, 2011
+**Jez Humble, David Farley.** Continuous Delivery: Reliable Software Releases through Build, Test, and Deployment Automation. Addison-Wesley, 2011
 |===
 
 [transition="fade-out, slide-in"]
@@ -188,13 +186,13 @@ image::water-filtration.jpg[{image-50-width}]
 == Случай из практики: лечение
 
 
-* Добавляем JSONLint в начало пути.
+* Добавляем JSONLint в начало пути
 
 [source,bash]
 find . -name \\*.json -print0 | xargs -0 -n1 -t jsonlint -q
 
 [.fragment]
-* Убеждаемся, что отклик на проблему идёт *сразу*.
+* Убеждаемся, что отклик на проблему идёт *сразу*
 
 [.fragment]
 * PROFIT
@@ -232,6 +230,38 @@ image::legacy.png[]
 
 [.fragment]
 Вывод: метод хорош, но труднодоступен
+
+== Проверка правописания
+
+[%step]
+* Quality Gate: **не должно быть незнакомых спелчекеру слов**.
+* Запускайте aspell в не-интерактивном режиме
+* Храните пользовательский словарь в проекте
+
+== Проверка правописания
+
+Проверка документации:
+[source,bash]
+----
+for f in $(find . -name '*.adoc'); do \
+cat $f | aspell --master=ru --personal=./dict list; done \
+| sort | uniq
+----
+
+Проверка литералов и комментариев:
+[source,bash]
+----
+for f in $(find . -name '*.java'); do \
+cat $f \
+| aspell --mode=ccpp --master=ru --personal=./dict list; done\
+| sort | uniq
+----
+
+
+== Упавшая проверка
+
+image::aspell-fail.png[{image-60-width}]
+
 
 == Храповик
 
@@ -356,7 +386,7 @@ digraph G {
 
 image::ratchet-report.png[{image-60-width}]
 
-== Как это реализовать самому?
+== Как это реализовано у нас
 
 * Jenkins scripted pipeline
 * Jenkins shared libraries in Groovy
@@ -401,31 +431,6 @@ recordIssues tool: java(pattern: '*.log'),
 
 .Checkstyle warnings, https://github.com/CourseOrchestra/celesta[Celesta project]
 image::graph.png[{image-70-width}]
-
-== Проверка правописания
-
-* Quality Gate: **не должно быть незнакомых спелчерекру слов**.
-* Запускайте aspell в не-интерактивном режиме
-* Храните пользовательский словарь в проекте
-
-== Проверка правописания
-
-.Проверка документации:
-[source,bash]
-----
-for f in $(find . -name '*.adoc'); do \
-cat $f | aspell --master=ru --personal=./dict list; done \
-| sort | uniq
-----
-
-.Проверка литералов и комментариев:
-[source,bash]
-----
-for f in $(find . -name '*.java'); do \
-cat $f \
-| aspell --mode=ccpp --master=ru --personal=./dict list; done\
-| sort | uniq
-----
 
 == Случай из практики
 
@@ -494,14 +499,14 @@ install:
 * Статический анализ многолик
 * Статический анализ бесполезен при нерегулярном применении
 * Внедряйте анализ в качестве первого звена конвейера интеграции
-* Используйте метод храповика для установки quality gates
+* Устанавливайте quality gates. Используйте метод храповика
 * Не забывайте про воспроизводимость сборок
 
 == Ссылки
 
 * *Humble, Jez; Farley, David (2011).* Continuous Delivery: reliable software releases through build, test, and deployment automation.
-* *И. Пономарев* https://habr.com/ru/post/436868/[Внедряйте статический анализ в процесс, а не ищите с его помощью баги]
-* *А. Кудрявцев* https://www.youtube.com/watch?v=8Cx3LHNjI24[Анализ программ: как понять, что ты хороший программист]
+* *Иван Пономарев* https://habr.com/ru/post/436868/[Внедряйте статический анализ в процесс, а не ищите с его помощью баги]
+* *Алексей Кудрявцев* https://www.youtube.com/watch?v=8Cx3LHNjI24[Анализ программ: как понять, что ты хороший программист]
 
 == На этом всё!
 
