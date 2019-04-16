@@ -133,22 +133,32 @@ image::arab-horse.jpg[{image-70-width}]
 [transition="fade-out, slide-in"]
 == Типовой конвейер сборки
 
-image::pipeline.svg[{image-70-width}]
+{nbsp}
+
+image::pipeline.svg[{image-80-width}]
 
 [transition="fade-out, fade-in"]
 == Типовой конвейер сборки
 
-image::pipeline.svg[{image-70-width}]
-image::raising.svg[{image-70-width}]
-«Фильтрующая способность»
+«Фильтрующая способность» +
+{nbsp}
+
+image::raising.svg[{image-60-width}]
+
+
+image::pipeline.svg[{image-80-width}]
+
 
 [transition="fade-in, slide-out"]
 == Типовой конвейер сборки
 
-image::pipeline.svg[{image-70-width}]
-image::raising.svg[{image-70-width}]
 Сложность, стоимость, +
 время работы, вероятность сбоя
+
+image::raising.svg[{image-60-width}]
+
+image::pipeline.svg[{image-80-width}]
+
 
 
 == Пирамида Тестирования
@@ -166,22 +176,33 @@ image::test-pyramid.png[{image-70-width}]
 [transition="fade-out, slide-in"]
 == Многоступенчатый фильтр
 
+{nbsp}
+
 .Источник: https://commons.wikimedia.org/wiki/File:Milli-Q_Water_filtration_station.JPG[Wikimedia Commons]
 image::water-filtration.jpg[{image-50-width}]
 
 [transition="fade-out, fade-in"]
 == Многоступенчатый фильтр
 
-image::water-filtration.jpg[{image-50-width}]
-image::decreasing.svg[{image-50-width}]
+
 Размер пропускаемого загрязнения +
 Пропускная способность
 
+image::decreasing.svg[{image-50-width}]
+
+image::water-filtration.jpg[{image-50-width}]
+
+
 [transition="fade-in, slide-out"]
 == Многоступенчатый фильтр
-image::water-filtration.jpg[{image-50-width}]
+
+Сложность, стоимость +
+{nbsp}
+
 image::raising.svg[{image-50-width}]
-Сложность, стоимость
+
+
+image::water-filtration.jpg[{image-50-width}]
 
 == Вывод
 [%step]
