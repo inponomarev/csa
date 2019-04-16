@@ -89,7 +89,7 @@ def halts(f):
 
 == Не волшебный единорог!
 
-image::no-unicorn.jpg[]
+image::no-unicorn.jpg[{image-70-width}]
 
 == Обыкновенная лошадь
 
@@ -133,23 +133,22 @@ image::arab-horse.jpg[{image-70-width}]
 [transition="fade-out, slide-in"]
 == Типовой конвейер сборки
 
-1. статический анализ
-2. компиляция
-3. модульные тесты
-4. интеграционные тесты
-5. UI тесты
-6. performance check
-7. ручная проверка
+image::pipeline.svg[{image-70-width}]
+
+[transition="fade-out, fade-in"]
+== Типовой конвейер сборки
+
+image::pipeline.svg[{image-70-width}]
+image::raising.svg[{image-70-width}]
+«Фильтрующая способность»
 
 [transition="fade-in, slide-out"]
 == Типовой конвейер сборки
-1. статический анализ
-2. компиляция
-3. [.highlight-red]#**модульные тесты**#
-4. [.highlight-red]#**интеграционные тесты**#
-5. [.highlight-red]#**UI тесты**#
-6. performance check
-7. ручная проверка
+
+image::pipeline.svg[{image-70-width}]
+image::raising.svg[{image-70-width}]
+Сложность, стоимость, +
+время работы, вероятность сбоя
 
 
 == Пирамида Тестирования
@@ -164,10 +163,30 @@ image::test-pyramid.png[{image-70-width}]
 // .Источник: https://twitter.com/noahsussman/status/836612175707930625[Noah Sussman]
 //image::test-filter.jpg[{image-40-width}]
 
+[transition="fade-out, slide-in"]
 == Многоступенчатый фильтр
 
 .Источник: https://commons.wikimedia.org/wiki/File:Milli-Q_Water_filtration_station.JPG[Wikimedia Commons]
 image::water-filtration.jpg[{image-50-width}]
+
+[transition="fade-out, fade-in"]
+== Многоступенчатый фильтр
+
+image::water-filtration.jpg[{image-50-width}]
+image::decreasing.svg[{image-50-width}]
+Размер пропускаемого загрязнения +
+Пропускная способность
+
+[transition="fade-in, slide-out"]
+== Многоступенчатый фильтр
+image::water-filtration.jpg[{image-50-width}]
+image::raising.svg[{image-50-width}]
+Сложность, стоимость
+
+== Вывод
+[%step]
+* Статанализ — «грязевик» в начале цепочки фильтров
+* В отдельности от других — не работает
 
 == Случай из практики: долгий отклик
 
@@ -179,8 +198,8 @@ image::water-filtration.jpg[{image-50-width}]
 }
 ----
 
-[.fragment]
-* Тесты падают.
+[%step]
+* Все UI тесты падают.
 * Но это происходит *спустя дни*.
 
 == Случай из практики: лечение
